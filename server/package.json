@@ -1,15 +1,15 @@
 {
-	"name": "lsp-sample-server",
-	"description": "Example implementation of a language server in node.",
-	"version": "1.0.0",
-	"author": "Microsoft Corporation",
+	"name": "derw-language-server-server",
+	"description": "Derw language server in node.",
+	"version": "0.0.1",
+	"author": "eeue56",
 	"license": "MIT",
 	"engines": {
 		"node": "*"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
+		"url": "https://github.com/derw-lang/derw-language-server"
 	},
 	"dependencies": {
 		"derw": "^0.0.3-17",
