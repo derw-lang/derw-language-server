@@ -2,24 +2,22 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
+import { parse } from 'derw/build/parser';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
-	createConnection,
-	TextDocuments,
-	Diagnostic,
-	DiagnosticSeverity,
-	ProposedFeatures,
-	InitializeParams,
-	DidChangeConfigurationNotification,
 	CompletionItem,
 	CompletionItemKind,
+	createConnection,
+	Diagnostic,
+	DiagnosticSeverity,
+	DidChangeConfigurationNotification,
+	InitializeParams,
+	InitializeResult,
+	ProposedFeatures,
 	TextDocumentPositionParams,
+	TextDocuments,
 	TextDocumentSyncKind,
-	InitializeResult
 } from 'vscode-languageserver/node';
-
-import {
-	TextDocument
-} from 'vscode-languageserver-textdocument';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -54,15 +52,15 @@ connection.onInitialize((params: InitializeParams) => {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
 			// Tell the client that this server supports code completion.
 			completionProvider: {
-				resolveProvider: true
-			}
-		}
+				resolveProvider: true,
+			},
+		},
 	};
 	if (hasWorkspaceFolderCapability) {
 		result.capabilities.workspace = {
 			workspaceFolders: {
-				supported: true
-			}
+				supported: true,
+			},
 		};
 	}
 	return result;
@@ -74,7 +72,7 @@ connection.onInitialized(() => {
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
 	}
 	if (hasWorkspaceFolderCapability) {
-		connection.workspace.onDidChangeWorkspaceFolders(_event => {
+		connection.workspace.onDidChangeWorkspaceFolders((_event) => {
 			connection.console.log('Workspace folder change event received.');
 		});
 	}
@@ -94,7 +92,7 @@ let globalSettings: ExampleSettings = defaultSettings;
 // Cache the settings of all open documents
 const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
 
-connection.onDidChangeConfiguration(change => {
+connection.onDidChangeConfiguration((change) => {
 	if (hasConfigurationCapability) {
 		// Reset all cached document settings
 		documentSettings.clear();
@@ -116,7 +114,7 @@ function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
 	if (!result) {
 		result = connection.workspace.getConfiguration({
 			scopeUri: resource,
-			section: 'languageServerExample'
+			section: 'derwLanguageServer',
 		});
 		documentSettings.set(resource, result);
 	}
@@ -124,15 +122,32 @@ function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
 }
 
 // Only keep settings for open documents
-documents.onDidClose(e => {
+documents.onDidClose((e) => {
 	documentSettings.delete(e.document.uri);
 });
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
+documents.onDidChangeContent((change) => {
 	validateTextDocument(change.document);
 });
+
+type LineInfo = {
+	start: number;
+	end: number;
+};
+
+function lineNumberToIndex(lineNumber: number, text: string): LineInfo {
+	const split = text.split('\n');
+	const priorLines = split.slice(0, lineNumber);
+	const priorLength = priorLines.join('\n').length;
+	const lineEnd = priorLength + split[lineNumber].length;
+
+	return {
+		start: priorLength,
+		end: lineEnd,
+	};
+}
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// In this simple example we get the settings for every validate run.
@@ -140,50 +155,77 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
 	// The validator creates diagnostics for all uppercase words length 2 and more
 	const text = textDocument.getText();
-	const pattern = /\b[A-Z]{2,}\b/g;
-	let m: RegExpExecArray | null;
-
 	let problems = 0;
 	const diagnostics: Diagnostic[] = [];
-	while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-		problems++;
-		const diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: {
-				start: textDocument.positionAt(m.index),
-				end: textDocument.positionAt(m.index + m[0].length)
-			},
-			message: `${m[0]} is all uppercase.`,
-			source: 'ex'
-		};
-		if (hasDiagnosticRelatedInformationCapability) {
-			diagnostic.relatedInformation = [
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Spelling matters'
+
+	const parsed = parse(text);
+
+	for (const error of parsed.errors) {
+		if (error.startsWith('Line')) {
+			const lineNumber = parseInt(error.split('Line')[1].split(':')[0].trim(), 10);
+			const indexes = lineNumberToIndex(lineNumber, text);
+
+			problems++;
+			const diagnostic: Diagnostic = {
+				severity: DiagnosticSeverity.Error,
+				range: {
+					start: textDocument.positionAt(indexes.start + 1),
+					end: textDocument.positionAt(indexes.end - 1),
 				},
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
+				message: error,
+				source: 'ex',
+			};
+			diagnostics.push(diagnostic);
+		} else if (error.startsWith('Error on lines')) {
+			const numberRange = error.split('Error on lines')[1].trim();
+			const startLine = parseInt(numberRange.split('-')[0].trim(), 10);
+			const endLine = parseInt(numberRange.split('-')[1].trim(), 10) - 1;
+			const indexes = lineNumberToIndex(startLine, text);
+			const endIndexes = lineNumberToIndex(endLine, text);
+
+			problems++;
+			const diagnostic: Diagnostic = {
+				severity: DiagnosticSeverity.Error,
+				range: {
+					start: textDocument.positionAt(indexes.start + 1),
+					end: textDocument.positionAt(endIndexes.end + 1),
+				},
+				message: error,
+				source: 'ex',
+			};
+			diagnostics.push(diagnostic);
+		} else if (error.startsWith('The name')) {
+			const ranges = error
+				.split('\n')
+				.filter((line) => line.includes(' - ') && line.endsWith(':'));
+
+			for (const range of ranges) {
+				const startLine = parseInt(range.split('-')[0].trim(), 10);
+				const endLine = parseInt(range.split('-')[1].trim(), 10) - 1;
+				const indexes = lineNumberToIndex(startLine, text);
+				const endIndexes = lineNumberToIndex(endLine, text);
+
+				problems++;
+				const diagnostic: Diagnostic = {
+					severity: DiagnosticSeverity.Error,
+					range: {
+						start: textDocument.positionAt(indexes.start + 1),
+						end: textDocument.positionAt(endIndexes.end + 1),
 					},
-					message: 'Particularly for names'
-				}
-			];
+					message: error,
+					source: 'ex',
+				};
+				diagnostics.push(diagnostic);
+			}
 		}
-		diagnostics.push(diagnostic);
 	}
 
 	// Send the computed diagnostics to VSCode.
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
-connection.onDidChangeWatchedFiles(_change => {
+connection.onDidChangeWatchedFiles((_change) => {
 	// Monitored files have change in VSCode
-	connection.console.log('We received an file change event');
 });
 
 // This handler provides the initial list of the completion items.
@@ -196,31 +238,22 @@ connection.onCompletion(
 			{
 				label: 'TypeScript',
 				kind: CompletionItemKind.Text,
-				data: 1
+				data: 1,
 			},
 			{
 				label: 'JavaScript',
 				kind: CompletionItemKind.Text,
-				data: 2
-			}
+				data: 2,
+			},
 		];
 	}
 );
 
 // This handler resolves additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve(
-	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			item.detail = 'TypeScript details';
-			item.documentation = 'TypeScript documentation';
-		} else if (item.data === 2) {
-			item.detail = 'JavaScript details';
-			item.documentation = 'JavaScript documentation';
-		}
-		return item;
-	}
-);
+connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
+	return item;
+});
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
