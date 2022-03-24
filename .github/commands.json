@@ -2,12 +2,7 @@
 	{
 		"type": "comment",
 		"name": "question",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "updateLabels",
 		"addLabel": "*question"
 	},
@@ -44,12 +39,7 @@
 	{
 		"type": "comment",
 		"name": "causedByExtension",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "updateLabels",
 		"addLabel": "*caused-by-extension"
 	},
@@ -68,12 +58,7 @@
 	{
 		"type": "comment",
 		"name": "duplicate",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "updateLabels",
 		"addLabel": "*duplicate"
 	},
@@ -86,9 +71,7 @@
 	{
 		"type": "comment",
 		"name": "verified",
-		"allowUsers": [
-			"@author"
-		],
+		"allowUsers": [ "@author" ],
 		"action": "updateLabels",
 		"addLabel": "z-author-verified",
 		"removeLabel": "author-verification-requested",
@@ -98,12 +81,7 @@
 	{
 		"type": "comment",
 		"name": "confirm",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "updateLabels",
 		"addLabel": "confirmed",
 		"removeLabel": "confirmation-pending"
@@ -111,12 +89,7 @@
 	{
 		"type": "comment",
 		"name": "confirmationPending",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "updateLabels",
 		"addLabel": "confirmation-pending",
 		"removeLabel": "confirmed"
@@ -124,12 +97,7 @@
 	{
 		"type": "comment",
 		"name": "needsMoreInfo",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "updateLabels",
 		"addLabel": "~needs more info"
 	},
@@ -143,12 +111,7 @@
 	{
 		"type": "comment",
 		"name": "closedWith",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "unreleased"
 	},
@@ -192,12 +155,7 @@
 	{
 		"type": "comment",
 		"name": "extPython",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the Python extension. Please file it with the repository [here](https://github.com/microsoft/vscode-python). Make sure to check their issue reporting template and provide them relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -205,12 +163,7 @@
 	{
 		"type": "comment",
 		"name": "extC",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the C extension. Please file it with the repository [here](https://github.com/microsoft/vscode-cpptools). Make sure to check their issue reporting template and provide them relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -218,12 +171,7 @@
 	{
 		"type": "comment",
 		"name": "extC++",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the C++ extension. Please file it with the repository [here](https://github.com/microsoft/vscode-cpptools). Make sure to check their issue reporting template and provide them relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -231,12 +179,7 @@
 	{
 		"type": "comment",
 		"name": "extCpp",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the C++ extension. Please file it with the repository [here](https://github.com/microsoft/vscode-cpptools). Make sure to check their issue reporting template and provide them relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -244,12 +187,7 @@
 	{
 		"type": "comment",
 		"name": "extTS",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the TypeScript language service. Please file it with the repository [here](https://github.com/microsoft/TypeScript/). Make sure to check their [contributing guidelines](https://github.com/microsoft/TypeScript/blob/master/CONTRIBUTING.md) and provide relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -257,12 +195,7 @@
 	{
 		"type": "comment",
 		"name": "extJS",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the TypeScript/JavaScript language service. Please file it with the repository [here](https://github.com/microsoft/TypeScript/). Make sure to check their [contributing guidelines](https://github.com/microsoft/TypeScript/blob/master/CONTRIBUTING.md) and provide relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -270,12 +203,7 @@
 	{
 		"type": "comment",
 		"name": "extC#",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the C# extension. Please file it with the repository [here](https://github.com/OmniSharp/omnisharp-vscode.git). Make sure to check their issue reporting template and provide them relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -283,12 +211,7 @@
 	{
 		"type": "comment",
 		"name": "extGo",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the Go extension. Please file it with the repository [here](https://github.com/golang/vscode-go). Make sure to check their issue reporting template and provide them relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -296,12 +219,7 @@
 	{
 		"type": "comment",
 		"name": "extPowershell",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the PowerShell extension. Please file it with the repository [here](https://github.com/PowerShell/vscode-powershell). Make sure to check their issue reporting template and provide them relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -309,12 +227,7 @@
 	{
 		"type": "comment",
 		"name": "extLiveShare",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the LiveShare extension. Please file it with the repository [here](https://github.com/MicrosoftDocs/live-share). Make sure to check their [contributing guidelines](https://github.com/MicrosoftDocs/live-share/blob/master/CONTRIBUTING.md) and provide relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -322,12 +235,7 @@
 	{
 		"type": "comment",
 		"name": "extDocker",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the Docker extension. Please file it with the repository [here](https://github.com/microsoft/vscode-docker). Make sure to check their issue reporting template and provide them relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -335,12 +243,7 @@
 	{
 		"type": "comment",
 		"name": "extJava",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the Java extension. Please file it with the repository [here](https://github.com/redhat-developer/vscode-java). Make sure to check their [troubleshooting instructions](https://github.com/redhat-developer/vscode-java/wiki/Troubleshooting) and provide relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -348,12 +251,7 @@
 	{
 		"type": "comment",
 		"name": "extJavaDebug",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "close",
 		"addLabel": "*caused-by-extension",
 		"comment": "It looks like this is caused by the Java Debugger extension. Please file it with the repository [here](https://github.com/microsoft/vscode-java-debug). Make sure to check their issue reporting template and provide them relevant information such as the extension version you're using. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines for more information.\n\nHappy Coding!"
@@ -361,28 +259,18 @@
 	{
 		"type": "comment",
 		"name": "gifPlease",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		],
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ],
 		"action": "comment",
 		"comment": "Thanks for reporting this issue! Unfortunately, it's hard for us to understand what issue you're seeing. Please help us out by providing a screen recording showing exactly what isn't working as expected. While we can work with most standard formats, `.gif` files are preferred as they are displayed inline on GitHub. You may find https://gifcap.dev helpful as a browser-based gif recording tool.\n\nIf the issue depends on keyboard input, you can help us by enabling screencast mode for the recording (`Developer: Toggle Screencast Mode` in the command palette).\n\nHappy coding!"
 	},
 	{
 		"type": "comment",
 		"name": "label",
-		"allowUsers": []
+		"allowUsers": [ ]
 	},
 	{
 		"type": "comment",
 		"name": "assign",
-		"allowUsers": [
-			"cleidigh",
-			"usernamehw",
-			"gjsjohnmurray",
-			"IllusionMH"
-		]
+		"allowUsers": [ "cleidigh", "usernamehw", "gjsjohnmurray", "IllusionMH" ]
 	}
 ]

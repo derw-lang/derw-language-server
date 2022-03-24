@@ -156,7 +156,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// The validator creates diagnostics for all uppercase words length 2 and more
 	const text = textDocument.getText();
 	let problems = 0;
-	const diagnostics: Diagnostic[] = [];
+	const diagnostics: Diagnostic[] = [ ];
 
 	const parsed = parse(text);
 

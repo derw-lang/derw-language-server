@@ -51,7 +51,8 @@
 		"watch": "tsc -b -w",
 		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"test": "sh ./scripts/e2e.sh"
+		"test": "sh ./scripts/e2e.sh",
+		"format": "npx prettier --write ."
 	},
 	"devDependencies": {
 		"@types/mocha": "^9.1.0",
@@ -60,6 +61,7 @@
 		"@typescript-eslint/parser": "^5.13.0",
 		"eslint": "^8.10.0",
 		"mocha": "^9.2.1",
+		"prettier": "github:eeue56/prettier#feat/spacing-around-square-brackets",
 		"typescript": "^4.6.2"
 	}
 }
