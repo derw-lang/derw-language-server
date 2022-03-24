@@ -6,7 +6,6 @@ import { parse } from 'derw/build/parser';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
 	CompletionItem,
-	CompletionItemKind,
 	createConnection,
 	Diagnostic,
 	DiagnosticSeverity,
@@ -173,7 +172,6 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 					end: textDocument.positionAt(indexes.end - 1),
 				},
 				message: error,
-				source: 'ex',
 			};
 			diagnostics.push(diagnostic);
 		} else if (error.startsWith('Error on lines')) {
@@ -191,7 +189,6 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 					end: textDocument.positionAt(endIndexes.end + 1),
 				},
 				message: error,
-				source: 'ex',
 			};
 			diagnostics.push(diagnostic);
 		} else if (error.startsWith('The name')) {
@@ -213,7 +210,6 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 						end: textDocument.positionAt(endIndexes.end + 1),
 					},
 					message: error,
-					source: 'ex',
 				};
 				diagnostics.push(diagnostic);
 			}
@@ -234,18 +230,7 @@ connection.onCompletion(
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
-				data: 1,
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2,
-			},
-		];
+		return [ ];
 	}
 );
 
