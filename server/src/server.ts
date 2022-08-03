@@ -2,7 +2,9 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
+import { generateDerw } from 'derw/build/generators/derw';
 import { parse } from 'derw/build/parser';
+import { Type } from 'derw/build/types';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
 	CompletionItem,
@@ -10,8 +12,10 @@ import {
 	Diagnostic,
 	DiagnosticSeverity,
 	DidChangeConfigurationNotification,
+	Hover,
 	InitializeParams,
 	InitializeResult,
+	MarkupContent,
 	ProposedFeatures,
 	TextDocumentPositionParams,
 	TextDocuments,
@@ -53,6 +57,7 @@ connection.onInitialize((params: InitializeParams) => {
 			completionProvider: {
 				resolveProvider: true,
 			},
+			hoverProvider: true,
 		},
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -236,6 +241,191 @@ connection.onCompletion(
 		return [ ];
 	}
 );
+
+function isAlphaNumeric(str: string): boolean {
+	const len = str.length;
+	for (let i = 0; i < len; i++) {
+		const code = str.charCodeAt(i);
+		if (
+			!(code > 47 && code < 58) && // numeric (0-9)
+			!(code > 64 && code < 91) && // upper alpha (A-Z)
+			!(code > 96 && code < 123)
+		) {
+			// lower alpha (a-z)
+			return false;
+		}
+	}
+	return true;
+}
+
+function closestToken(line: string, index: number): string {
+	if (!isAlphaNumeric(line[index])) return '';
+	const previousChars: string[] = [ ];
+	const afterChars: string[] = [ ];
+
+	let i = index - 1;
+	while (i >= 0) {
+		if (!isAlphaNumeric(line[i])) {
+			break;
+		} else {
+			previousChars.splice(0, 0, line[i]);
+		}
+		i--;
+	}
+
+	i = index + 1;
+	while (i < line.length) {
+		if (!isAlphaNumeric(line[i])) {
+			break;
+		} else {
+			afterChars.push(line[i]);
+		}
+		i++;
+	}
+
+	return [ ...previousChars, line[index], ...afterChars ].join('');
+}
+
+function typeToString(type: Type): string {
+	switch (type.kind) {
+		case 'GenericType': {
+			return type.name;
+		}
+		case 'FixedType': {
+			const typeArgs =
+				type.args.length === 0 ? '' : ' (' + type.args.map(typeToString).join(' ') + ')';
+			return `${type.name}${typeArgs}`.trim();
+		}
+		case 'FunctionType': {
+			return type.args.map(typeToString).join('->');
+		}
+	}
+}
+
+connection.onHover((params: TextDocumentPositionParams): Hover | undefined => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return;
+	const tokenAtHover = closestToken(
+		doc?.getText().split('\n')[params.position.line] || '',
+		params.position.character
+	);
+
+	if (tokenAtHover.length === 0) return;
+
+	const text = doc?.getText();
+	const parsed = parse(text);
+
+	let markdown: MarkupContent | null = null;
+
+	for (const block of parsed.body) {
+		switch (block.kind) {
+			case 'Comment':
+			case 'Export':
+			case 'MultilineComment':
+			case 'Import': {
+				break;
+			}
+
+			case 'Const': {
+				if (block.name === tokenAtHover) {
+					markdown = {
+						kind: 'markdown',
+						value: [ `${tokenAtHover}`, '```elm', typeToString(block.type), '```' ].join(
+							'\n'
+						),
+					};
+				}
+				break;
+			}
+
+			case 'Function': {
+				if (block.name === tokenAtHover) {
+					const types = block.args
+						.map((value) => {
+							if (value.kind === 'FunctionArg') {
+								return typeToString(value.type);
+							} else {
+								return typeToString(value.type);
+							}
+						})
+						.join(' -> ');
+
+					const args = block.args
+						.map((value) => {
+							if (value.kind === 'FunctionArg') {
+								return value.name;
+							} else {
+								return value.index;
+							}
+						})
+						.join(' -> ');
+
+					markdown = {
+						kind: 'markdown',
+						value: [
+							`${tokenAtHover}`,
+							'```elm',
+							`${types} -> ${typeToString(block.returnType)}`,
+							`${args} -> `,
+							'```',
+						].join('\n'),
+					};
+				}
+				break;
+			}
+
+			case 'UnionType': {
+				if (
+					block.type.name === tokenAtHover ||
+					block.tags.filter((t) => t.name === tokenAtHover).length > 0
+				) {
+					markdown = {
+						kind: 'markdown',
+						value: [
+							`${tokenAtHover}`,
+							'```elm',
+							generateDerw({
+								kind: 'Module',
+								name: 'Main',
+								body: [ block ],
+								errors: [ ],
+							}),
+							'```',
+						].join('\n'),
+					};
+				}
+				break;
+			}
+
+			case 'TypeAlias': {
+				if (block.type.name === tokenAtHover) {
+					markdown = {
+						kind: 'markdown',
+						value: [
+							`${tokenAtHover}`,
+							'```elm',
+							generateDerw({
+								kind: 'Module',
+								name: 'Main',
+								body: [ block ],
+								errors: [ ],
+							}),
+							'```',
+						].join('\n'),
+					};
+				}
+				break;
+			}
+		}
+		if (markdown) break;
+	}
+
+	if (!markdown) return;
+
+	return {
+		contents: markdown,
+	};
+});
 
 // This handler resolves additional information for the item selected in
 // the completion list.
