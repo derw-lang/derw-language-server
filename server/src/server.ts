@@ -305,10 +305,16 @@ function typeToString(type: Type): string {
 connection.onHover((params: TextDocumentPositionParams): Hover | undefined => {
 	const doc = documents.get(params.textDocument.uri);
 	if (!doc) return;
-	const tokenAtHover = closestToken(
-		doc?.getText().split('\n')[params.position.line] || '',
-		params.position.character
-	);
+
+	let tokenAtHover = '';
+	try {
+		tokenAtHover = closestToken(
+			doc?.getText().split('\n')[params.position.line] || '',
+			params.position.character
+		);
+	} catch {
+		return;
+	}
 
 	if (tokenAtHover.length === 0) return;
 
