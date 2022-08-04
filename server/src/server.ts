@@ -4,7 +4,9 @@
  * ------------------------------------------------------------------------------------------ */
 import { generateDerw } from 'derw/build/generators/derw';
 import { parse } from 'derw/build/parser';
-import { Type } from 'derw/build/types';
+import { Module, Type } from 'derw/build/types';
+import { readFile } from 'fs/promises';
+import * as path from 'path';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
 	CompletionItem,
@@ -302,39 +304,41 @@ function typeToString(type: Type): string {
 	}
 }
 
-connection.onHover((params: TextDocumentPositionParams): Hover | undefined => {
-	const doc = documents.get(params.textDocument.uri);
-	if (!doc) return;
-
-	let tokenAtHover = '';
-	try {
-		tokenAtHover = closestToken(
-			doc?.getText().split('\n')[params.position.line] || '',
-			params.position.character
-		);
-	} catch {
-		return;
-	}
-
-	if (tokenAtHover.length === 0) return;
-
-	const text = doc?.getText();
-	const parsed = parse(text);
-
-	let markdown: MarkupContent | null = null;
-
+async function getMarkdown(
+	tokenAtHover: string,
+	parsed: Module,
+	directory: string
+): Promise<MarkupContent | null> {
 	for (const block of parsed.body) {
 		switch (block.kind) {
 			case 'Comment':
 			case 'Export':
-			case 'MultilineComment':
+			case 'MultilineComment': {
+				break;
+			}
+
 			case 'Import': {
+				for (const module of block.modules) {
+					if (module.namespace === 'Global') continue;
+					for (const exposing of module.exposing) {
+						if (exposing === tokenAtHover) {
+							const filename = path.join(directory, module.name.slice(1, -1) + '.derw');
+							try {
+								const content = await readFile(filename, 'utf-8');
+								const newParsed = parse(content);
+								return await getMarkdown(tokenAtHover, newParsed, directory);
+							} catch (e) {
+								continue;
+							}
+						}
+					}
+				}
 				break;
 			}
 
 			case 'Const': {
 				if (block.name === tokenAtHover) {
-					markdown = {
+					return {
 						kind: 'markdown',
 						value: [ `${tokenAtHover}`, '```elm', typeToString(block.type), '```' ].join(
 							'\n'
@@ -366,7 +370,7 @@ connection.onHover((params: TextDocumentPositionParams): Hover | undefined => {
 						})
 						.join(' -> ');
 
-					markdown = {
+					return {
 						kind: 'markdown',
 						value: [
 							`${tokenAtHover}`,
@@ -385,7 +389,7 @@ connection.onHover((params: TextDocumentPositionParams): Hover | undefined => {
 					block.type.name === tokenAtHover ||
 					block.tags.filter((t) => t.name === tokenAtHover).length > 0
 				) {
-					markdown = {
+					return {
 						kind: 'markdown',
 						value: [
 							`${tokenAtHover}`,
@@ -405,7 +409,7 @@ connection.onHover((params: TextDocumentPositionParams): Hover | undefined => {
 
 			case 'TypeAlias': {
 				if (block.type.name === tokenAtHover) {
-					markdown = {
+					return {
 						kind: 'markdown',
 						value: [
 							`${tokenAtHover}`,
@@ -423,8 +427,38 @@ connection.onHover((params: TextDocumentPositionParams): Hover | undefined => {
 				break;
 			}
 		}
-		if (markdown) break;
 	}
+
+	return null;
+}
+
+connection.onHover(async (params: TextDocumentPositionParams): Promise<
+	Hover | undefined
+> => {
+	const doc = documents.get(params.textDocument.uri);
+	if (!doc) return;
+
+	let tokenAtHover = '';
+	try {
+		tokenAtHover = closestToken(
+			doc?.getText().split('\n')[params.position.line] || '',
+			params.position.character
+		);
+	} catch {
+		return;
+	}
+
+	const dirName = path.dirname(params.textDocument.uri);
+	if (tokenAtHover.length === 0) return;
+
+	const text = doc?.getText();
+	const parsed = parse(text);
+
+	const markdown: MarkupContent | null = await getMarkdown(
+		tokenAtHover,
+		parsed,
+		dirName.split('file://')[1]
+	);
 
 	if (!markdown) return;
 
