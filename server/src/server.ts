@@ -251,7 +251,8 @@ function isAlphaNumeric(str: string): boolean {
     if (
       !(code > 47 && code < 58) && // numeric (0-9)
       !(code > 64 && code < 91) && // upper alpha (A-Z)
-      !(code > 96 && code < 123)
+      !(code > 96 && code < 123) &&
+      code !== 46 // .
     ) {
       // lower alpha (a-z)
       return false;
@@ -343,6 +344,34 @@ function constToMarkupContent(block: Const): MarkupContent {
     kind: 'markdown',
     value: [ `${block.name}`, '```elm', typeToString(block.type), '```' ].join('\n'),
   };
+}
+
+async function getMarkdownFromModuleReference(
+  moduleName: string,
+  tokenName: string,
+  parsed: ContextModule,
+  directory: string
+): Promise<MarkupContent | null> {
+  for (const block of parsed.body) {
+    switch (block.kind) {
+      case 'Import': {
+        for (const module of block.modules) {
+          if (module.namespace === 'Global') continue;
+          if (module.alias.kind === 'Just' && module.alias.value === moduleName) {
+            const filename = path.join(directory, module.name.slice(1, -1) + '.derw');
+            try {
+              const content = await readFile(filename, 'utf-8');
+              const newParsed = parseWithContext(content);
+              return await getMarkdown(tokenName, newParsed, directory, null);
+            } catch (e) {
+              continue;
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
 }
 
 async function getMarkdown(
@@ -505,13 +534,22 @@ connection.onHover(async (params: TextDocumentPositionParams): Promise<
 
   const text = doc?.getText();
   const parsed = parseWithContext(text);
+  const isModuleReference = tokenAtHover.split('.').length === 2;
+  const directory = dirName.split('file://')[1];
 
-  const markdown: MarkupContent | null = await getMarkdown(
-    tokenAtHover,
-    parsed,
-    dirName.split('file://')[1],
-    params.position.line
-  );
+  let markdown: MarkupContent | null = null;
+  if (isModuleReference) {
+    const moduleName = tokenAtHover.split('.')[0];
+    const tokenName = tokenAtHover.split('.')[1];
+    markdown = await getMarkdownFromModuleReference(
+      moduleName,
+      tokenName,
+      parsed,
+      directory
+    );
+  } else {
+    markdown = await getMarkdown(tokenAtHover, parsed, directory, params.position.line);
+  }
 
   if (!markdown) return;
 
