@@ -300,7 +300,7 @@ function typeToString(type: Type): string {
       return `${type.name}${typeArgs}`.trim();
     }
     case 'FunctionType': {
-      return type.args.map(typeToString).join('->');
+      return '(' + type.args.map(typeToString).join(' -> ') + ')';
     }
   }
 }
