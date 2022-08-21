@@ -2,7 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { generateDerw } from 'derw/build/generators/derw';
+import { generateDerw } from 'derw/build/generators/Derw';
 import { parse, parseWithContext } from 'derw/build/parser';
 import { Const, ContextModule, Function, Type } from 'derw/build/types';
 import { readFile } from 'fs/promises';
@@ -381,6 +381,7 @@ async function getMarkdown(
   lineNumber: number | null
 ): Promise<MarkupContent | null> {
   let i = -1;
+
   for (const block of parsed.body) {
     i++;
     const unparsedBlock = parsed.unparsedBody[i];
@@ -506,6 +507,25 @@ async function getMarkdown(
           };
         }
         break;
+      }
+
+      case 'UnionUntaggedType': {
+        if (block.type.name === tokenAtHover) {
+          return {
+            kind: 'markdown',
+            value: [
+              `${tokenAtHover}`,
+              '```elm',
+              generateDerw({
+                kind: 'Module',
+                name: 'Main',
+                body: [ block ],
+                errors: [ ],
+              }),
+              '```',
+            ].join('\n'),
+          };
+        }
       }
     }
   }
