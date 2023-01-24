@@ -4,13 +4,15 @@
  * ------------------------------------------------------------------------------------------ */
 import { generateDerw } from 'derw/build/generators/Derw';
 import { parse, parseWithContext } from 'derw/build/parser';
-import { Const, ContextModule, Function, Type } from 'derw/build/types';
+import { Const, ContextModule, Function, Module, Type } from 'derw/build/types';
 import { readFile } from 'fs/promises';
 import * as path from 'path';
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Range, TextDocument } from 'vscode-languageserver-textdocument';
 import {
   CompletionItem,
   createConnection,
+  DefinitionLink,
+  DefinitionParams,
   Diagnostic,
   DiagnosticSeverity,
   DidChangeConfigurationNotification,
@@ -60,6 +62,7 @@ connection.onInitialize((params: InitializeParams) => {
         resolveProvider: true,
       },
       hoverProvider: true,
+      definitionProvider: true,
     },
   };
   if (hasWorkspaceFolderCapability) {
@@ -582,6 +585,172 @@ connection.onHover(async (params: TextDocumentPositionParams): Promise<
 // the completion list.
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
   return item;
+});
+
+async function findIdentifierLocationInImport(
+  tokenName: string,
+  moduleName: string,
+  parsed: Module,
+  directory: string
+): Promise<Range | null> {
+  for (const block of parsed.body) {
+    switch (block.kind) {
+      case 'Import': {
+        for (const module of block.modules) {
+        }
+      }
+    }
+  }
+  return null;
+}
+
+type IdentiferLocation = {
+  range: Range;
+  uri: string;
+};
+
+async function findIdentifierLocation(
+  identifier: string,
+  allText: string,
+  uri: string
+): Promise<IdentiferLocation | null> {
+  const isModuleReference = identifier.split('.').length === 2;
+  const moduleName = identifier.split('.')[0] || '';
+  const tokenName = identifier.split('.')[1] || '';
+
+  const parsed = parseWithContext(allText);
+  for (let i = 0; i < parsed.body.length; i++) {
+    const block = parsed.body[i];
+    const unparsedBlock = parsed.unparsedBody[i];
+
+    switch (block.kind) {
+      case 'Const':
+      case 'Function': {
+        if (block.name === identifier) {
+          return {
+            uri: uri,
+            range: {
+              start: { line: unparsedBlock.lineStart, character: 0 },
+              end: {
+                line: unparsedBlock.lineStart + unparsedBlock.lines.length,
+                character: 0,
+              },
+            },
+          };
+        }
+        continue;
+      }
+
+      case 'TypeAlias': {
+        if (block.type.name === identifier) {
+          return {
+            uri: uri,
+            range: {
+              start: { line: unparsedBlock.lineStart, character: 0 },
+              end: {
+                line: unparsedBlock.lineStart + unparsedBlock.lines.length,
+                character: 0,
+              },
+            },
+          };
+        }
+        continue;
+      }
+
+      case 'UnionType': {
+        const isATag = block.tags.filter((tag) => tag.name === identifier).length > 0;
+        if (block.type.name === identifier || isATag) {
+          return {
+            uri: uri,
+            range: {
+              start: { line: unparsedBlock.lineStart, character: 0 },
+              end: {
+                line: unparsedBlock.lineStart + unparsedBlock.lines.length,
+                character: 0,
+              },
+            },
+          };
+        }
+        continue;
+      }
+
+      case 'UnionUntaggedType': {
+        if (block.type.name === identifier) {
+          return {
+            uri: uri,
+            range: {
+              start: { line: unparsedBlock.lineStart, character: 0 },
+              end: {
+                line: unparsedBlock.lineStart + unparsedBlock.lines.length,
+                character: 0,
+              },
+            },
+          };
+        }
+        continue;
+      }
+
+      case 'Import': {
+        for (const module of block.modules) {
+          if (module.namespace === 'Global') continue;
+          if (
+            module.exposing.includes(identifier) ||
+            (isModuleReference &&
+              module.alias.kind == 'Just' &&
+              module.alias.value === moduleName)
+          ) {
+            const dirName = path.dirname(uri);
+            const directory = dirName.split('file://')[1];
+            const filename = path.join(directory, module.name.slice(1, -1) + '.derw');
+            const identifierToUse = isModuleReference ? tokenName : identifier;
+            try {
+              const content = await readFile(filename, 'utf-8');
+              return await findIdentifierLocation(
+                identifierToUse,
+                content,
+                `file://${filename}`
+              );
+            } catch (e) {
+              continue;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+connection.onDefinition(async (params: DefinitionParams): Promise<DefinitionLink[]> => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) return [ ];
+
+  let tokenAtHover = '';
+  try {
+    tokenAtHover = closestToken(
+      doc?.getText().split('\n')[params.position.line] || '',
+      params.position.character
+    );
+  } catch {
+    return [ ];
+  }
+
+  const location = await findIdentifierLocation(
+    tokenAtHover,
+    doc?.getText(),
+    params.textDocument.uri
+  );
+
+  if (!location) return [ ];
+
+  return [
+    {
+      targetUri: location.uri,
+      targetRange: location.range,
+      targetSelectionRange: location.range,
+    },
+  ];
 });
 
 // Make the text document manager listen on the connection
