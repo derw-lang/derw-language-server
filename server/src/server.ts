@@ -305,6 +305,17 @@ function typeToString(type: Type): string {
     case 'FunctionType': {
       return '(' + type.args.map(typeToString).join(' -> ') + ')';
     }
+    case 'ObjectLiteralType': {
+      const output = [ ];
+
+      for (const prop of Object.keys(type.properties)) {
+        const value = type.properties[prop];
+
+        output.push(`${prop}: ${typeToString(value)}`);
+      }
+
+      return `{ ${output.join(', ')} }`;
+    }
   }
 }
 

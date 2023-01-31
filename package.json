@@ -1,18 +1,27 @@
 {
 	"name": "derw-language-server",
-	"description": "A derw language server",
+	"description": "Language server for Derw",
 	"author": "eeue56",
-	"license": "MIT",
+	"license": "BSD-3",
 	"version": "0.0.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/derw-lang/derw-language-server"
 	},
-	"publisher": "eeue56",
-	"categories": [],
+	"publisher": "derw",
+    "categories": [
+        "Programming Languages"
+    ],
 	"keywords": [
-		"multi-root ready"
+		"derw",
+		"language",
+		"server"
 	],
+	"sponsor": {
+        "url": "https://github.com/sponsors/eeue56"
+    },
+    "pricing": "Free",
+    "icon": "derw_logo.png",
 	"engines": {
 		"vscode": "^1.63.0"
 	},
@@ -43,13 +52,22 @@
 					"description": "Traces the communication between VS Code and the language server."
 				}
 			}
-		}
+		},
+		"taskDefinitions": [
+			{
+				"type": "derw",
+				"required": [
+				],
+				"properties": {
+				}
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
-		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
+		"lcint": "eslint ./client/src ./server/src --ext .ts,.tsx",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"test": "sh ./scripts/e2e.sh",
 		"format": "npx prettier --write ."
