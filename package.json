@@ -3,25 +3,25 @@
 	"description": "Language server for Derw",
 	"author": "eeue56",
 	"license": "BSD-3",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/derw-lang/derw-language-server"
 	},
 	"publisher": "derw",
-    "categories": [
-        "Programming Languages"
-    ],
+	"categories": [
+		"Programming Languages"
+	],
 	"keywords": [
 		"derw",
 		"language",
 		"server"
 	],
 	"sponsor": {
-        "url": "https://github.com/sponsors/eeue56"
-    },
-    "pricing": "Free",
-    "icon": "derw_logo.png",
+		"url": "https://github.com/sponsors/eeue56"
+	},
+	"pricing": "Free",
+	"icon": "derw_logo.png",
 	"engines": {
 		"vscode": "^1.63.0"
 	},
@@ -56,10 +56,8 @@
 		"taskDefinitions": [
 			{
 				"type": "derw",
-				"required": [
-				],
-				"properties": {
-				}
+				"required": [],
+				"properties": {}
 			}
 		]
 	},
