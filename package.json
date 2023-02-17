@@ -3,7 +3,7 @@
 	"description": "Language server for Derw",
 	"author": "eeue56",
 	"license": "BSD-3",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/derw-lang/derw-language-server"
