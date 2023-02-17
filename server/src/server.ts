@@ -5,11 +5,12 @@
 import { generateDerw } from 'derw/build/generators/Derw';
 import { parse, parseWithContext } from 'derw/build/parser';
 import { Const, ContextModule, Function, Module, Type } from 'derw/build/types';
-import { readFile } from 'fs/promises';
+import { readdir, readFile } from 'fs/promises';
 import * as path from 'path';
 import { Range, TextDocument } from 'vscode-languageserver-textdocument';
 import {
   CompletionItem,
+  CompletionItemKind,
   createConnection,
   DefinitionLink,
   DefinitionParams,
@@ -60,6 +61,7 @@ connection.onInitialize((params: InitializeParams) => {
       // Tell the client that this server supports code completion.
       completionProvider: {
         resolveProvider: true,
+        triggerCharacters: [ '"', '.', '/' ],
       },
       hoverProvider: true,
       definitionProvider: true,
@@ -234,18 +236,94 @@ connection.onDidChangeWatchedFiles((_change) => {
   // Monitored files have change in VSCode
 });
 
+type FileEntry = { name: string; kind: 'FileEntry' };
+type FolderEntry = { name: string; kind: 'FolderEntry' };
+
+type Entry = FileEntry | FolderEntry;
+
+async function listDirectories(rootPath: string): Promise<Entry[]> {
+  const filesAndFolders: Entry[] = [ ];
+  for (const dir of await readdir(rootPath, {
+    withFileTypes: true,
+  })) {
+    if (dir.isDirectory()) {
+      filesAndFolders.push({ name: dir.name, kind: 'FolderEntry' });
+    } else if (
+      (dir.isFile() && dir.name.endsWith('.derw')) ||
+      dir.name.endsWith('.js') ||
+      dir.name.endsWith('.ts')
+    ) {
+      let alreadySeen = false;
+      for (const file of filesAndFolders) {
+        if (
+          file.name.split('.').slice(-1).join('.') ===
+          dir.name.split('.').slice(-1).join('.')
+        ) {
+          alreadySeen = true;
+          break;
+        }
+      }
+      if (!alreadySeen) {
+        filesAndFolders.push({ name: dir.name, kind: 'FileEntry' });
+      }
+    }
+  }
+  return filesAndFolders;
+}
+
 // This handler provides the initial list of the completion items.
-connection.onCompletion(
-  (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    // The pass parameter contains the position of the text document in
-    // which code complete got requested. For the example we ignore this
-    // info and always provide the same completion items.
+connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<
+  CompletionItem[]
+> => {
+  // The pass parameter contains the position of the text document in
+  // which code complete got requested. For the example we ignore this
+  // info and always provide the same completion items.
 
-    const currentLine = textDocumentPosition.textDocument;
+  const doc = documents.get(textDocumentPosition.textDocument.uri);
+  if (!doc) return [ ];
 
+  try {
+    const line = doc?.getText().split('\n')[textDocumentPosition.position.line] || '';
+    if (line.startsWith('import')) {
+      const isParentDirectory = line.includes('..');
+      let workingPath =
+        line
+          .split('.')
+          .slice(1)
+          .join('.')
+          .split('"')[0]
+          .split('/')
+          .slice(0, -1)
+          .join('/') || '/';
+
+      workingPath = path.join(
+        textDocumentPosition.textDocument.uri
+          .split('file:/')[1]
+          .split('/')
+          .slice(0, -1)
+          .join('/'),
+        isParentDirectory ? '.' + workingPath : workingPath
+      );
+
+      return (await listDirectories(workingPath)).map((entry: Entry) => {
+        return {
+          label:
+            entry.kind === 'FileEntry'
+              ? entry.name.split('.').slice(-1).join('.')
+              : entry.name,
+          kind:
+            entry.kind === 'FileEntry'
+              ? CompletionItemKind.File
+              : CompletionItemKind.Folder,
+        };
+      });
+    }
+  } catch {
     return [ ];
   }
-);
+
+  return [ ];
+});
 
 function isAlphaNumeric(str: string): boolean {
   const len = str.length;
